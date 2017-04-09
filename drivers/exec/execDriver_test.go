@@ -34,4 +34,15 @@ func TestExec(t *testing.T) {
 		_, err := driver.execute(&action)
 		So(err, ShouldNotBeNil)
 	})
+	Convey("Exec Command", t, func() {
+		action := drivers.Action{
+			Input: drivers.Values{
+				"command": "ping www.baidu.com -c 1",
+			},
+		}
+		output, err := driver.execute(&action)
+		So(err, ShouldBeNil)
+		data := output.(map[string]string)
+		t.Logf("Exec Command Stdout:\n%s", data["stdout"])
+	})
 }
