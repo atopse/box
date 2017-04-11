@@ -1,7 +1,7 @@
 package drivers
 
 import "fmt"
-import "github.com/atopse/comm"
+import "github.com/atopse/comm/kind"
 
 // Action 驱动动作
 type Action struct {
@@ -45,15 +45,15 @@ type ActionDescriptor struct {
 
 // OptionDescriptor Option描述
 type OptionDescriptor struct {
-	Name        string         //参数名称
-	Description string         //参数描述
-	ValueType   comm.ValueType //参数值数据类型
+	Name        string    //参数名称
+	Description string    //参数描述
+	ValueType   kind.Kind //参数值数据类型
 }
 
 // InputDescriptor 输入信息描述
 type InputDescriptor struct {
 	OptionDescriptor
-	Mandatory bool //是否是必要参数
+	Required bool //是否是必要参数
 	// ValeRules   []m.Rule       //参数值验证信息
 }
 

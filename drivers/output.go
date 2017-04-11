@@ -6,11 +6,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/atopse/comm"
+	"github.com/atopse/comm/kind"
 )
 
 // OutputType 数据输出类型
-type OutputType comm.ValueType
+type OutputType kind.Kind
 
 // Output 输出信息
 type Output struct {

@@ -1,3 +1,5 @@
+//go:generate driver-gen
+
 package exec
 
 import (
@@ -10,6 +12,10 @@ import (
 )
 
 // ExecDriver 命令执行驱动器
+// @title Command
+// @namespace exec.driver.atopse
+// @tags #command #bash
+// @desc 用于执行操作系统的各项命令
 type ExecDriver struct {
 	drivers.Driver
 }
@@ -26,7 +32,7 @@ func (d *ExecDriver) ExecAction(action *drivers.Action) (output interface{}, err
 
 // execute 执行OS的cmd命令
 // @title execute
-// @namspace execute
+// @namespace execute
 // @param command string required 执行命令内容
 // @return map[string]string  命令执行结果信息
 func (d *ExecDriver) execute(action *drivers.Action) (output interface{}, err error) {
