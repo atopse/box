@@ -1,7 +1,7 @@
 package drivers
 
-import "fmt"
 import "github.com/atopse/comm/kind"
+import "fmt"
 
 // Action 驱动动作
 type Action struct {
@@ -12,26 +12,8 @@ type Action struct {
 	Input     Values `json:"inputValues"`
 }
 
-// NewAction 初始化一个Action
-func NewAction(driverNamespace, actionNamespace string, values Values) (*Action, error) {
-	d, err := GetDriver(driverNamespace)
-	if err != nil {
-		return nil, err
-	}
-	actions := d.Actions()
-	for _, a := range actions {
-		if a.Namespace == actionNamespace {
-			action := Action{
-				ID:     UUID(),
-				Driver: d.Namespace(),
-				Title:  a.Title,
-				Input:  values,
-			}
-			// TODO: 验证输入值是否复核要求
-			return &action, nil
-		}
-	}
-	return nil, fmt.Errorf("NewAction:驱动%s(%s)下无%qAction", d.Title(), d.Namespace(), actionNamespace)
+func (a *Action) String() string {
+	return fmt.Sprintf("%s.%s.%s", a.Title, a.ID, a.Namespace)
 }
 
 // ActionDescriptor Action描述信息

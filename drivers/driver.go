@@ -4,6 +4,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"html/template"
+
+	"bytes"
+
+	"reflect"
+
+	"strings"
 
 	"github.com/astaxie/beego/logs"
 	"github.com/atopse/comm/bee"
@@ -31,6 +38,8 @@ type DriverInterface interface {
 
 	// Actions 行为描述
 	Actions() []ActionDescriptor
+
+	NewAction(actionNamespace string, input Values) (*Action, error)
 
 	// Action 执行行为命令
 	ExecAction(action *Action) (interface{}, error)
@@ -61,13 +70,17 @@ func RegisterDriver(driver DriverInterface) {
 		logs.Warn("拒绝注册Title为空的驱动器:%s", driver.String())
 		return
 	}
-	class := driver.Namespace()
-	if _, ok := drivers[class]; ok {
+	namespace := driver.Namespace()
+	if _, ok := drivers[namespace]; ok {
 		logs.Warn("拒绝重复注册驱动器:%s", driver.String())
 		return
 	}
 	logs.Info("受理驱动器注册:%s", driver.String())
-	drivers[class] = driver
+	actions := driver.Actions()
+	for _, a := range actions {
+		logs.Info("驱动器:%s,Action: %+v", driver.Namespace(), a)
+	}
+	drivers[namespace] = driver
 }
 
 // GetDriver 获取指定类型的驱动器
@@ -85,7 +98,7 @@ func NewDriver(cfg DriverConfig) Driver {
 		panic("驱动器名称不能为空")
 	}
 	if cfg.Namespace == "" {
-		panic("驱动器Class不能为空")
+		panic("驱动器Namespace不能为空")
 	}
 
 	return Driver{
@@ -140,8 +153,35 @@ func (d *Driver) LogFatal(args ...interface{}) {
 // }
 
 // Actions 返回Action描述信息
-func (d *Driver) Actions() []ActionDescriptor {
-	return []ActionDescriptor{}
+// func (d *Driver) Actions() []ActionDescriptor {
+// 	panic("")
+// }
+
+// NewAction 初始化一个Action
+func (d *Driver) NewAction(actionNamespace string, values Values) (*Action, error) {
+	dd, err := GetDriver(d.Namespace())
+	if err != nil {
+		return nil, err
+	}
+	actions := dd.Actions()
+	if len(actions) == 0 {
+		return nil, fmt.Errorf("NewAction:驱动%s(%s)下无Action", d.Title(), d.Namespace())
+	}
+	for _, a := range actions {
+		fmt.Println(a.Namespace)
+		if a.Namespace == actionNamespace {
+			action := Action{
+				ID:        UUID(),
+				Driver:    d.Namespace(),
+				Namespace: a.Namespace,
+				Title:     a.Title,
+				Input:     values,
+			}
+			// TODO: 验证输入值是否复核要求
+			return &action, nil
+		}
+	}
+	return nil, fmt.Errorf("NewAction:驱动%s(%s)下无%qAction", d.Title(), d.Namespace(), actionNamespace)
 }
 
 // ExecAction 执行Action，但基础Driver中不具体实现。
@@ -162,7 +202,7 @@ func (d *Driver) ActionHandler(ctx *bee.Context) {
 		return
 	}
 
-	action, err = NewAction(d.Namespace(), action.Namespace, action.Input)
+	action, err = d.NewAction(action.Namespace, action.Input)
 	if err != nil {
 		ctx.JSON(err)
 		return
@@ -191,4 +231,22 @@ func (d *Driver) String() string {
 func UUID() string {
 	u, _ := uuid.NewV4()
 	return u.String()
+}
+
+// ConvertInput 解析Input输入
+func ConvertInput(input interface{}, data interface{}) (interface{}, error) {
+	switch v := input.(type) {
+	case string:
+		if !strings.Contains(v, "{") {
+			return v, nil
+		}
+		buf := bytes.NewBuffer(nil)
+		err := template.Must(template.New(UUID()).Parse(v)).Execute(buf, data)
+		if err != nil {
+			return nil, err
+		}
+
+		return buf.String(), nil
+	}
+	return nil, fmt.Errorf("尚未实现对类型：%s的解析", reflect.TypeOf(input))
 }
