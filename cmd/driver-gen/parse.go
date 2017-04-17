@@ -205,7 +205,7 @@ func commentToCode(comments map[string]string) (map[string]interface{}, error) {
 			}
 			paramInfo := make(map[string]interface{})
 			paramInfo["name"] = items[0]
-			paramInfo["typ"] = items[1]
+			paramInfo["typ"] = strings.Title(items[1])
 			paramInfo["required"] = false
 			paramInfo["desc"] = ""
 			if len(items) > 2 {
