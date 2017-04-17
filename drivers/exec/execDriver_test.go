@@ -9,7 +9,7 @@ import (
 )
 
 func TestExec(t *testing.T) {
-	driver := ExecDriver{}
+	driver := Driver{}
 	Convey("Exec Command", t, func() {
 		action := drivers.Action{
 			Input: drivers.Values{
@@ -18,12 +18,7 @@ func TestExec(t *testing.T) {
 		}
 		output, err := driver.execute(&action)
 		So(err, ShouldBeNil)
-		So(output, ShouldHaveSameTypeAs, map[string]string{})
-		data := output.(map[string]string)
-		So(data, ShouldContainKey, "stdout")
-		So(data, ShouldContainKey, "stderr")
-		So(data["stdout"], ShouldContainSubstring, "execDriver_test.go")
-		t.Logf("Exec Command Stdout:\n%s", data["stdout"])
+		So(output, ShouldContainSubstring, "execDriver_test.go")
 	})
 	Convey("Exec Command", t, func() {
 		action := drivers.Action{
@@ -34,15 +29,15 @@ func TestExec(t *testing.T) {
 		_, err := driver.execute(&action)
 		So(err, ShouldNotBeNil)
 	})
-	Convey("Exec Command", t, func() {
+	Convey("Exec Command with var", t, func() {
 		action := drivers.Action{
 			Input: drivers.Values{
-				"command": "ping www.baidu.com -c 1",
+				"command": "go build {{.pkg}}",
+				"pkg":     "github.com/atopse/box/drivers/exec_notfound",
 			},
 		}
 		output, err := driver.execute(&action)
-		So(err, ShouldBeNil)
-		data := output.(map[string]string)
-		t.Logf("Exec Command Stdout:\n%s", data["stdout"])
+		So(output, ShouldBeEmpty)
+		So(err.Error(), ShouldStartWith, "can't load package: package github.com/atopse/box/drivers/exec_notfound")
 	})
 }
