@@ -9,6 +9,18 @@ import (
 	"github.com/atopse/comm/kind"
 )
 
+// NotFoundItemError 不存在该项Error
+type NotFoundItemError struct {
+	Item string
+}
+
+func (n *NotFoundItemError) Error() string {
+	if n.Item == "" {
+		return "未找到项"
+	}
+	return fmt.Sprintf("未找到项%q", n.Item)
+}
+
 // OutputType 数据输出类型
 type OutputType kind.Kind
 
@@ -27,7 +39,7 @@ type Values map[string]interface{}
 func (v Values) Bind(key string, dst interface{}) error {
 	value, ok := v[key]
 	if !ok {
-		return fmt.Errorf("未找到项%q", key)
+		return &NotFoundItemError{key}
 	}
 	return ConvertValue(value, dst)
 }
@@ -50,7 +62,7 @@ func ConvertValue(v interface{}, dst interface{}) error {
 		case int:
 			*d = strconv.FormatInt(int64(vt), 10)
 		default:
-			panic(fmt.Sprintf("无法将类型 %+v 转换为string", vt))
+			return fmt.Errorf("无法将类型 %+v 转换为string", vt)
 		}
 
 	case *[]string:
@@ -60,7 +72,7 @@ func ConvertValue(v interface{}, dst interface{}) error {
 		case string:
 			*d = strings.Split(vt, ",")
 		default:
-			panic(fmt.Sprintf("无法将类型 %+v 转换为[]string", vt))
+			return fmt.Errorf("无法将类型 %+v 转换为[]string", vt)
 		}
 
 	case *bool:
@@ -83,7 +95,7 @@ func ConvertValue(v interface{}, dst interface{}) error {
 		case float64:
 			*d = vt > 0
 		default:
-			panic(fmt.Sprintf("无法将类型 %+v 转换为bool", vt))
+			return fmt.Errorf("无法将类型 %+v 转换为bool", vt)
 		}
 
 	case *float64:
@@ -116,7 +128,7 @@ func ConvertValue(v interface{}, dst interface{}) error {
 			x, _ := strconv.Atoi(vt)
 			*d = float64(x)
 		default:
-			panic(fmt.Sprintf("无法将类型 %+v 转换为float64", vt))
+			return fmt.Errorf("无法将类型 %+v 转换为float64", vt)
 		}
 
 	case *int:
@@ -148,7 +160,7 @@ func ConvertValue(v interface{}, dst interface{}) error {
 		case string:
 			*d, _ = strconv.Atoi(vt)
 		default:
-			panic(fmt.Sprintf("无法将类型 %+v 转换为int", vt))
+			return fmt.Errorf("无法将类型 %+v 转换为int", vt)
 		}
 
 	case *url.Values:
@@ -156,11 +168,12 @@ func ConvertValue(v interface{}, dst interface{}) error {
 		case string:
 			*d, _ = url.ParseQuery(vt)
 		default:
-			panic(fmt.Sprintf("无法将类型 %+v 转换为 url.Values", vt))
+			return fmt.Errorf("无法将类型 %+v 转换为 url.Values", vt)
 		}
-
+	case interface{}:
+		dst = v
 	default:
-		panic(fmt.Sprintf("无法处理的dst数据类型 %+v", dst))
+		return fmt.Errorf("无法处理的dst数据类型 %+v", dst)
 	}
 
 	return nil
