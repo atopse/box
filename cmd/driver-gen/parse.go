@@ -125,7 +125,7 @@ func parserStructComments(comments *ast.CommentGroup) (map[string]interface{}, e
 			}
 			commentMap["tags"] = tags
 		} else if _, ok := commentMap[item]; !ok {
-			commentMap[item] = kv[1]
+			commentMap[item] = strings.TrimSpace(kv[1])
 		} else {
 			return nil, errors.New("存在重复项 " + item)
 		}
@@ -199,7 +199,7 @@ func commentToCode(comments map[string]string) (map[string]interface{}, error) {
 		if p, ok := comments[item]; !ok {
 			break
 		} else {
-			items := strings.SplitN(p, " ", 4)
+			items := strings.Fields(p)
 			if len(items) <= 1 {
 				return nil, errors.New("@param 描述信息必须有2项，必须依次是： name type [required] [desc]")
 			}
