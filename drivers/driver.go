@@ -83,6 +83,18 @@ func RegisterDriver(driver DriverInterface) {
 	drivers[namespace] = driver
 }
 
+// GetDrivers 获取所有已注册的Drivers
+func GetDrivers() []DriverInterface {
+	items := []DriverInterface{}
+	for _, v := range drivers {
+		if v == nil {
+			continue
+		}
+		items = append(items, v)
+	}
+	return items
+}
+
 // GetDriver 获取指定类型的驱动器
 func GetDriver(namespace string) (DriverInterface, error) {
 	d, ok := drivers[namespace]

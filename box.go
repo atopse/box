@@ -18,6 +18,7 @@ type ActionOption struct {
 type Box struct {
 	drivers.Driver
 	Actions []ActionOption
+	Input   drivers.Values
 }
 
 // Config Box配置
@@ -58,7 +59,7 @@ func (b *Box) Exec() (output interface{}, err error) {
 		if err != nil {
 			return nil, err
 		}
-		input := mapJoin(outputValues, a.Input)
+		input := mapJoin(outputValues, a.Input, b.Input)
 		action, err := driver.NewAction(a.Action, input)
 		if err != nil {
 			return nil, err
