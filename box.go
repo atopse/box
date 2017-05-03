@@ -3,6 +3,8 @@ package box
 import (
 	"errors"
 
+	"strings"
+
 	"github.com/atopse/box/drivers"
 )
 
@@ -16,26 +18,30 @@ type ActionOption struct {
 
 // Box Driver的变种
 type Box struct {
-	drivers.Driver
-	Actions []ActionOption
-	Input   drivers.Values
+	Title       string          //魔盒名称,简称
+	Namespace   string          //魔盒标识符，必须全局唯一。依次同其他魔盒器进行区分
+	Description string          //魔盒描述，在使用魔盒时，可以显示对魔盒的描述，以方便了解魔盒功能
+	Options     drivers.Options //魔盒器配置信息
+	Actions     []ActionOption
+	Input       drivers.Values
 }
 
-// Config Box配置
-type Config drivers.DriverConfig
-
 // New 新建驱动器
-func New(cfg Config) Box {
-	if cfg.Title == "" {
-		panic("Box名称不能为空")
+func New(title, namespace string, description ...string) (*Box, error) {
+	if namespace == "" {
+		return nil, errors.New("namespace不能为空")
 	}
-	if cfg.Namespace == "" {
-		cfg.Namespace = "one.box.atopse"
+	if title == "" {
+		return nil, errors.New("title不能为空")
 	}
-	d := drivers.NewDriver(drivers.DriverConfig(cfg))
-	return Box{
-		Driver: d,
-	}
+	return &Box{
+		Title:       title,
+		Namespace:   namespace,
+		Description: strings.Join(description, ","),
+		Actions:     []ActionOption{},
+		Input:       make(drivers.Values),
+		Options:     drivers.Options{},
+	}, nil
 }
 func mapJoin(maps ...drivers.Values) drivers.Values {
 	m := make(drivers.Values)

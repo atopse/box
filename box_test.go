@@ -15,27 +15,32 @@ func TestFaildBox(t *testing.T) {
 
 	Convey("数据非法测试", t, func() {
 		Convey("Title不能为空", func() {
-			So(func() { New(Config{}) }, ShouldPanic)
+			_, err := New("", "")
+			So(err, ShouldNotBeNil)
 		})
 		Convey("无Action可执行", func() {
-			box := New(Config{Title: "title"})
-			_, err := box.Exec()
+			box, err := New("title", "one.box.atopse")
+			So(err, ShouldBeNil)
+
+			_, err = box.Exec()
 			So(err, ShouldNotBeNil)
 		})
 		Convey("Driver无效", func() {
-			box := New(Config{Title: "title"})
+			box, err := New("title", "one.box.atopse")
+			So(err, ShouldBeNil)
 			box.Actions = []ActionOption{
 				{Driver: "notfound", Action: "execute"},
 			}
-			_, err := box.Exec()
+			_, err = box.Exec()
 			So(err, ShouldNotBeNil)
 		})
 		Convey("Action无效", func() {
-			box := New(Config{Title: "title"})
+			box, err := New("title", "one.box.atopse")
+			So(err, ShouldBeNil)
 			box.Actions = []ActionOption{
 				{Driver: "exec.driver.atopse", Action: "notfound"},
 			}
-			_, err := box.Exec()
+			_, err = box.Exec()
 			So(err, ShouldNotBeNil)
 		})
 
@@ -44,7 +49,8 @@ func TestFaildBox(t *testing.T) {
 
 func TestBoxExec(t *testing.T) {
 	Convey("单个Action", t, func() {
-		box := New(Config{Title: "取ls信息"})
+		box, err := New("title", "one.box.atopse")
+		So(err, ShouldBeNil)
 		box.Actions = []ActionOption{
 			{Driver: "exec.driver.atopse", Action: "execute", Input: drivers.Values{"command": "ls"}},
 		}
@@ -56,7 +62,8 @@ func TestBoxExec(t *testing.T) {
 		So(result, ShouldContainSubstring, "box_test.go")
 	})
 	Convey("多个Action关联执行", t, func() {
-		box := New(Config{Title: "取ls信息"})
+		box, err := New("title", "one.box.atopse")
+		So(err, ShouldBeNil)
 		box.Actions = []ActionOption{
 			{Driver: "exec.driver.atopse", Action: "execute", Input: drivers.Values{"command": "go list"}, OutputVar: "pkg"},
 			{Driver: "exec.driver.atopse", Action: "execute", Input: drivers.Values{"command": "ls {{.gopath}}/src/{{.pkg}}", "gopath": os.Getenv("GOPATH")}},
