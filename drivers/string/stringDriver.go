@@ -67,6 +67,17 @@ func (d *Driver) execFormatAction(action *drivers.Action) (output string, err er
 		fmtway = "fmt.sprintf"
 	}
 
+	// 如果 data 是map类型数据，则继续将Input也追加
+	if mapData, ok := data.(map[string]interface{}); ok {
+		for k, v := range action.Input {
+			if k == "data" {
+				continue
+			}
+			mapData[k] = v
+		}
+		data = mapData
+	}
+
 	switch fmtway {
 	case "fmt.sprintf":
 		return fmt.Sprintf(format, data), nil
