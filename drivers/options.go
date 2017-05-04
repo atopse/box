@@ -7,9 +7,9 @@ type Options []Option
 
 // Option 选项信息
 type Option struct {
-	Name  string           //参数名称
-	Desc  OptionDescriptor //参数描述
-	Value interface{}
+	Name  string           `json:"name"` //参数名称
+	Desc  OptionDescriptor `json:"desc"` //参数描述
+	Value interface{}      `json:"value"`
 }
 
 // Value 从选项配置中获取对应项的值

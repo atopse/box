@@ -49,10 +49,10 @@ type DriverInterface interface {
 
 // DriverConfig 驱动器配置
 type DriverConfig struct {
-	Title       string  //驱动名称,简称
-	Namespace   string  //驱动标识符，必须全局唯一。依次同其他驱动器进行区分
-	Description string  //驱动描述，在使用驱动时，可以显示对驱动的描述，以方便了解驱动功能
-	Options     Options //驱动器配置信息
+	Title       string  `json:"title"`     //驱动名称,简称
+	Namespace   string  `json:"namespace"` //驱动标识符，必须全局唯一。依次同其他驱动器进行区分
+	Description string  `json:"desc"`      //驱动描述，在使用驱动时，可以显示对驱动的描述，以方便了解驱动功能
+	Options     Options `json:"options"`   //驱动器配置信息
 }
 
 // Driver 驱动
